@@ -47,3 +47,17 @@ func (h *WebOrderHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// GetAll returns all orders as JSON
+func (h *WebOrderHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+	getOrder := usecase.NewGetOrderUseCase(h.OrderRepository)
+	orders, err := getOrder.GetAllOrders()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(orders); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}

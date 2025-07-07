@@ -8,6 +8,7 @@ package main
 
 import (
 	"database/sql"
+
 	"github.com/devfullcycle/20-CleanArch/internal/entity"
 	"github.com/devfullcycle/20-CleanArch/internal/event"
 	"github.com/devfullcycle/20-CleanArch/internal/infra/database"
