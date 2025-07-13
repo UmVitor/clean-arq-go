@@ -1,0 +1,31 @@
+      services:
+        mysql:
+          image: mysql:8.0
+          platform: linux/arm64/v8
+          container_name: mysql
+          restart: always
+          environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: orders
+            MYSQL_PASSWORD: root
+          ports:
+            - 3306:3306
+          volumes:
+            - mysql_data:/var/lib/mysql
+            - ./migrations/init-tables.sql:/docker-entrypoint-initdb.d/init-tables.sql
+
+        rabbitmq:
+          image: rabbitmq:3-management-alpine
+          platform: linux/arm64/v8
+          container_name: rabbitmq
+          restart: always
+          ports:
+            - 5672:5672
+            - 15672:15672
+          environment:
+            RABBITMQ_DEFAULT_USER: guest
+            RABBITMQ_DEFAULT_PASS: guest
+
+      # Define named volumes
+      volumes:
+        mysql_data:
