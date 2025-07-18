@@ -1,31 +1,55 @@
-      services:
-        mysql:
-          image: mysql:8.0
-          platform: linux/arm64/v8
-          container_name: mysql
-          restart: always
-          environment:
-            MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: orders
-            MYSQL_PASSWORD: root
-          ports:
-            - 3306:3306
-          volumes:
-            - mysql_data:/var/lib/mysql
-            - ./migrations:/docker-entrypoint-initdb.d
+services:
+  mysql:
+    image: mysql:8.0
+    platform: linux/arm64/v8
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: orders
+      MYSQL_PASSWORD: root
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./migrations/init-tables.sql:/docker-entrypoint-initdb.d/init-tables.sql
+    networks:
+      - app-network
 
-        rabbitmq:
-          image: rabbitmq:3-management-alpine
-          platform: linux/arm64/v8
-          container_name: rabbitmq
-          restart: always
-          ports:
-            - 5672:5672
-            - 15672:15672
-          environment:
-            RABBITMQ_DEFAULT_USER: guest
-            RABBITMQ_DEFAULT_PASS: guest
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    platform: linux/arm64/v8
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - app-network
+  
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ordersystem
+    restart: always
+    ports:
+      - 8000:8000  # Web server
+      - 50051:50051  # gRPC server
+      - 8080:8080  # GraphQL server
+    volumes:
+      - ./.env:/app/.env
+    depends_on:
+      - mysql
+      - rabbitmq
+    networks:
+      - app-network
+volumes:
+  mysql_data:
 
-
-      volumes:
-        mysql_data:
+networks:
+  app-network:
+    driver: bridge
